@@ -1,7 +1,6 @@
 # **Advanced-Physical-Design-Using-OpenLANE-Sky130**
 The project transpires within the "Advanced Physical Design using OpenLANE/Sky130" course by VLSI System Design Corporation. The project materializes a comprehensive RTL to GDSII workflow for the PicoRV32a System-on-Chip (SoC) using OpenLANE, firmly grounded in the Skywater 130nm PDK.OpenLANE stands as an automated RTL to GDSII flow, amalgamating tools such as OpenROAD, Yosys, Magic, Netgen, Fault, OpenPhySyn, SPEF-Extractor, and bespoke methodology scripts for design exploration and optimization. Notably, the process incorporates tailor-made standard cells designed with the Sky130 PDK, while concurrently implementing timing optimizations and eliminating slack violations.Aiming to enable a genuine open-source tape-out journey, OpenLANE operates under the APACHE version 2.0 license. Its primary objective involves generating pristine GDSII outcomes without necessitating human intervention. Optimized for the Skywater 130nm open-source Process Design Kit (PDK), OpenLANE empowers the creation of hard macros and chips.Through this endeavor, participants gain firsthand exposure to a holistic ASIC design journey, refining skills within a real-world context.
 
-
 ## **Getting Started**
 The subsequent instance illustrates potential instructions for configuring your project within your local environment. Implement these straightforward steps to establish a local copy effectively.
 
@@ -13,12 +12,74 @@ Allocate a minimum of 25GB of Disk Space.
 ## **Initiating Installation**
 To initiate the installation process, kindly consult the following link: https://github.com/nickson-jose/openlane_build_script for comprehensive guidance on the installation procedures.
 
+## **How to talk to Computers?**
+The RISC-V Instruction Set Architecture (ISA) serves as a means of communication with computers utilizing RISC-V core hardware. When a user intends to execute a specific application software on a computer, the corresponding C/C++/Java program must be transformed into instructions via a compiler. The compiler's output is contingent upon the hardware in use. These instructions then serve as inputs for the assembler, generating binary code intelligible to the hardware logic within the chip layout. Based on the received bits, the digital logic comprising gates carries out the desired function for the application software user.
 
 
+## **The ASIC Design Flow: A Comprehensive Overview**
+
+The ASIC design flow has evolved into a well-established process in silicon turnkey design. This process encompasses a series of steps in VLSI engineering that adhere to best practices and proven methodologies for ASIC chip design.
+
+<img width="751" alt="Screenshot 2023-08-13 at 4 42 22 PM" src="https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/10c46220-099b-4806-878f-814e89561fac">
+
+### **Benefits of Embracing the ASIC Design Flow**
+
+Successful ASIC design necessitates adherence to a well-established flow, underpinned by a profound comprehension of ASIC specifications, requirements, low-power design, performance, and a focal point on achieving optimal time-to-market. Each phase of the ASIC design cycle is supported by EDA tools that facilitate seamless ASIC implementation.
 
 
+<img width="762" alt="Screenshot 2023-08-13 at 4 46 55 PM" src="https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/4d9c26ab-cb80-48e4-a4de-965044158ca2">
 
-## **Stages of OpenLANE Design Flow:**
+#### **1. Chip Specification**
+
+Engineers define features, microarchitecture, hardware/software interface functionalities, and specifications (Time, Area, Power, Speed) with ASIC design guidelines. This phase engages both the design and verification teams to generate RTL code and test benches.
+
+#### **2. Chip Partitioning**
+
+Using EDA tools and proven methodologies, engineers structure the chip based on ASIC design layout requirements and specifications. They partition the ASIC into functional blocks, adhering to performance, feasibility, and resource allocation criteria.
+
+#### **3. Design Entry / Functional Verification**
+
+Functional verification ensures the logical behavior of the circuit through simulation, generating RTL code and test benches.
+
+#### **4. RTL Synthesis**
+
+The RTL team translates RTL code into a gate-level netlist through logical synthesis tools, adhering to timing constraints.
+
+#### **5. Design for Test (DFT) Insertion**
+
+Design for test techniques are introduced to ensure high-quality testing, including scan path insertion, memory BIST, and ATPG.
+
+#### **6. Floor Planning**
+
+Floor planning involves placing blocks on the chip, optimizing wire lengths, and ensuring signals do not interfere with neighboring elements.
+
+#### **7. Clock Tree Synthesis**
+
+Clock tree synthesis builds the clock tree, meeting timing, area, and power requirements.
+
+#### **8. Place and Route**
+
+Global and detailed routing optimize wire delays and connections, addressing complex design challenges.
+
+#### **9. Final Verification (Physical Verification and Timing)**
+
+Signoff checks verify the layout's functionality, including layout versus schematic, design rule checks, and logical equivalence checks.
+
+#### **10. GDS II — Graphical Data Stream Information Interchange**
+
+In the tapeout stage, GDSII files are produced and used by semiconductor foundries to fabricate the silicon.
+
+## **OpenLANE ASIC Flow**
+
+### **Components of Open-Source Digital ASIC Design**
+Designing a digital Application Specific Integrated Circuit (ASIC) necessitates three essential components: 
+1. Resistor Transistor Logic Intellectual Property (RTL IPs)
+2. Electronic Design Automation (EDA) Tools
+3. Process Design Kit (PDK) data.
+
+<img width="312" alt="Screenshot 2023-08-13 at 5 00 49 PM" src="https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/783b0b2b-c745-4778-a416-0cbf0a004d75">
+
+## **Stages of OpenLANE Design Flow**
 
 #### **1. Synthesis:**
 - yosys: Undertakes RTL synthesis.
@@ -106,7 +167,6 @@ run_synthesis
 ![max_rpt](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/541ddd8a-7450-4651-8308-3566652a3ea4)
 
 **Hold Violation Report:**
-
 ![min_rpt](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/26fa72be-d01a-407f-a330-71e5b34cae89)
 
 
