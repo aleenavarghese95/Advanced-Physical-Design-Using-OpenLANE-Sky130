@@ -79,6 +79,12 @@ Designing a digital Application Specific Integrated Circuit (ASIC) necessitates 
 
 <img width="312" alt="Screenshot 2023-08-13 at 5 00 49 PM" src="https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/783b0b2b-c745-4778-a416-0cbf0a004d75">
 
+## **OpenLANE Design Flow**
+
+OpenLANE represents a fully automated RTL to GDSII process. Within this framework, various open-source tools like OpenROAD, Yosys, ABC, and Magic are integrated, alongside numerous custom methodology scripts that facilitate design exploration and optimization. OpenLANE is centered on the Skywater 130nm process technology and has the capacity to execute the complete ASIC implementation sequence from RTL down to GDSII. The provided flowchart below offers a more comprehensive visualization of the entire OpenLANE process (Image Credit: efabless/openlane).
+
+<img width="831" alt="Screenshot 2023-08-13 at 9 08 43 PM" src="https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/633d8426-da7b-432e-b903-d646cd5caab8">
+
 ## **Stages of OpenLANE Design Flow**
 
 #### **1. Synthesis:**
@@ -412,7 +418,7 @@ sky130_inv.spice will be created in the vsdstdcelldesign directory.
 Following is the content of the sky130_inv.spice :
 
 
-![image6](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/27de07e5-31c6-40c2-8a5a-a7981cbe62cc)
+![spice_file](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/0a16faed-3429-4a8e-9255-ee2e671dc980)
 
 The adjustments made to this SPICE deck involve the incorporation of the PMOS and NMOS libraries, namely pshort.lib and nshort.lib, respectively. Furthermore, the deck is enhanced by integrating the minimum grid size of the inverter, as determined from the magic layout, through the line: ".option scale=0.01u".
 
@@ -530,7 +536,9 @@ To achieve this, the primary step entails defining the ports and assigning accur
 - Within the Magic Layout window, initiate by sourcing the design's .mag file (as in the case of an inverter). Subsequently, navigate to Edit >> Text, which triggers the opening of a dialog box.
 
 
-![port_A](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/69775a9c-5432-4f5f-88a8-60d65ad6a53a)
+![A](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/d20de652-cf0d-45b9-915c-6d168d1ecbc1)
+
+![Y](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/eb97e881-1718-4743-a380-70c60583ddc7)
 
  - For every layer intended to be transformed into a port, create a box on the corresponding layer. Assign a label name and affix a sticky label indicating the layer's name that the port should be linked to. Confirm that the "Port enable" checkbox is selected, while the default checkbox remains unchecked, as illustrated in the figure.
 
@@ -540,7 +548,9 @@ In the depicted images, ports A (input port) and Y (output port) are sourced fro
 
 - For power and ground layers, the definition can either align with or deviate from the signal layer's setup. In this scenario, the grounding and power connections are derived from metal1, as indicated by the presence of the sticky label.
 
-![power_txt](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/4a89d3ad-3d43-4f98-a54b-9356cd928176)
+![vpwr](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/64b94d64-e49a-4747-930a-0581af418c79)
+
+![VGND](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/89a1cc53-dba2-450d-aee0-38092ccaa4bd)
 
 ### **Configure port class and port use attributes for a layout**
 
@@ -556,8 +566,85 @@ Prior to crafting the LEF file, specific properties require configuration. As pr
 lef write <file_name>.lef
 ````
 
-!!!add image!!
+
+![write_lef](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/42b7013f-bfb6-4ba6-b0cd-f05c0cb271d2)
+
 
 Generated lef file:
 
-!!!add image!!
+````
+VERSION 5.7 ;
+  NOWIREEXTENSIONATPIN ON ;
+  DIVIDERCHAR "/" ;
+  BUSBITCHARS "[]" ;
+MACRO sky130_inv
+  CLASS CORE ;
+  FOREIGN sky130_inv ;
+  ORIGIN 0.000 0.000 ;
+  SIZE 1.380 BY 2.720 ;
+  SITE unithd ;
+  PIN A
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    ANTENNAGATEAREA 0.165600 ;
+    PORT
+      LAYER li1 ;
+        RECT 0.060 1.180 0.510 1.690 ;
+    END
+  END A
+  PIN Y
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    ANTENNADIFFAREA 0.287800 ;
+    PORT
+      LAYER li1 ;
+        RECT 0.760 1.960 1.100 2.330 ;
+        RECT 0.880 1.690 1.050 1.960 ;
+        RECT 0.880 1.180 1.330 1.690 ;
+        RECT 0.880 0.760 1.050 1.180 ;
+        RECT 0.780 0.410 1.130 0.760 ;
+    END
+  END Y
+  PIN VPWR
+    DIRECTION INOUT ;
+    USE POWER ;
+    PORT
+      LAYER nwell ;
+        RECT -0.200 1.140 1.570 3.040 ;
+      LAYER li1 ;
+        RECT -0.200 2.580 1.430 2.900 ;
+        RECT 0.180 2.330 0.350 2.580 ;
+        RECT 0.100 1.970 0.440 2.330 ;
+      LAYER mcon ;
+        RECT 0.230 2.640 0.400 2.810 ;
+        RECT 1.000 2.650 1.170 2.820 ;
+      LAYER met1 ;
+        RECT -0.200 2.480 1.570 2.960 ;
+    END
+  END VPWR
+  PIN VGND
+    DIRECTION INOUT ;
+    USE GROUND ;
+    PORT
+      LAYER li1 ;
+        RECT 0.100 0.410 0.450 0.760 ;
+        RECT 0.150 0.210 0.380 0.410 ;
+        RECT 0.000 -0.150 1.460 0.210 ;
+      LAYER mcon ;
+        RECT 0.210 -0.090 0.380 0.080 ;
+        RECT 1.050 -0.090 1.220 0.080 ;
+      LAYER met1 ;
+        RECT -0.110 -0.240 1.570 0.240 ;
+    END
+  END VGND
+END sky130_inv
+END LIBRARY
+`````
+
+````
+cp /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/vsdstdcelldesign/sky130A_inv.lef /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/src/.
+`````
+
+`````
+cp /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/vsdstdcelldesign/libs/sky130_fd_sc_hd__* /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/src/.
+`````
