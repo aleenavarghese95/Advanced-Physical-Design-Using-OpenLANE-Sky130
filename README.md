@@ -6,8 +6,8 @@ The subsequent instance illustrates potential instructions for configuring your 
 
 ## **Prerequisites**
 
-Ensure possession of an Ubuntu OS-based System.
-Allocate a minimum of 25GB of Disk Space.
+- Ensure possession of an Ubuntu OS-based System.
+- Allocate a minimum of 25GB of Disk Space.
 
 ## **Initiating Installation**
 To initiate the installation process, kindly consult the following link: https://github.com/nickson-jose/openlane_build_script for comprehensive guidance on the installation procedures.
@@ -542,8 +542,6 @@ To achieve this, the primary step entails defining the ports and assigning accur
 
  - For every layer intended to be transformed into a port, create a box on the corresponding layer. Assign a label name and affix a sticky label indicating the layer's name that the port should be linked to. Confirm that the "Port enable" checkbox is selected, while the default checkbox remains unchecked, as illustrated in the figure.
 
- !!add image!!
-
 In the depicted images, ports A (input port) and Y (output port) are sourced from the local interconnect layer, referred to as "locali." Additionally, the numeral displayed in the textarea adjacent to the "enable" checkbox dictates the sequence in which the ports will be recorded within the LEF file (with 0 indicating the initial port).
 
 - For power and ground layers, the definition can either align with or deviate from the signal layer's setup. In this scenario, the grounding and power connections are derived from metal1, as indicated by the presence of the sticky label.
@@ -555,8 +553,19 @@ In the depicted images, ports A (input port) and Y (output port) are sourced fro
 ### **Configure port class and port use attributes for a layout**
 
 After defining the ports, the subsequent task involves assigning port class and port use attributes. While the "class" and "use" attributes of the port may not have inherent significance within Magic, they play a crucial role in the LEF and DEF format read and write procedures, aligning with the LEF/DEF CLASS and USE properties for macro cell pins. Permissible classes include: default, input, output, tristate, bidirectional, inout, feedthrough, and feedthru. Valid uses comprise: default, analog, signal, digital, power, ground, and clock. These attributes are configured within the tkcon window (once each port is selected on the layout window, which can be done by repeatedly pressing 's' until the desired port is highlighted), as demonstrated below:
+````
+port class <direction>
+port use <type>
+````
 
 ![port_class_use](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/74dfaa98-97ed-4fff-88a4-50eb370203aa)
+
+### **Saving the db**
+Following command is used:
+
+````
+save sky130_vsdinv.mag
+````
 
 ### **Defining LEF Properties and Generating the LEF File**
 
@@ -564,11 +573,10 @@ Prior to crafting the LEF file, specific properties require configuration. As pr
 
 ````
 lef write <file_name>.lef
-````
+lef write sky130_vsdinv.lef
+`````
 
-
-![write_lef](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/42b7013f-bfb6-4ba6-b0cd-f05c0cb271d2)
-
+![write_lef](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/f5810862-760f-4a4a-b962-50bd854058d8)
 
 Generated lef file:
 
@@ -577,9 +585,9 @@ VERSION 5.7 ;
   NOWIREEXTENSIONATPIN ON ;
   DIVIDERCHAR "/" ;
   BUSBITCHARS "[]" ;
-MACRO sky130_inv
+MACRO sky130_vsdinv
   CLASS CORE ;
-  FOREIGN sky130_inv ;
+  FOREIGN sky130_vsdinv ;
   ORIGIN 0.000 0.000 ;
   SIZE 1.380 BY 2.720 ;
   SITE unithd ;
@@ -637,14 +645,117 @@ MACRO sky130_inv
         RECT -0.110 -0.240 1.570 0.240 ;
     END
   END VGND
-END sky130_inv
+END sky130_vsdinv
 END LIBRARY
+
 `````
 
+### **Plugging the new lef file and libs of Inverter to the picoRV23a run**
+
+- Move the the newly created lef file to the picoRV32a src directory:
+
 ````
-cp /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/vsdstdcelldesign/sky130A_inv.lef /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/src/.
+cp /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/vsdstdcelldesign/sky130_vsdinv.lef /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/src/.
 `````
+- Copying the libs of Inverter to the picoRV32a directory:
 
 `````
 cp /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/vsdstdcelldesign/libs/sky130_fd_sc_hd__* /home/vsduser/Desktop/work/tools/openlane_working_dir/openlane/designs/picorv32a/src/.
 `````
+
+Also add the below lines in config.tcl
+
+````
+set ::env(LIB_SYNTH) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__typical.lib"
+set ::env(LIB_FASTEST) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__fast.lib"
+set ::env(LIB_SLOWEST) "$::env(OPENLANE_ROOT)/designs/picorv32a/src/sky130_fd_sc_hd__slow.lib"
+set ::env(LIB_TYPICAL) "$::env(OPENLANE_ROOT)/designs/picorv32a)/src/sky130_fd_sc_hd__typical.lib"
+
+set ::env(EXTRA_LEFS) [glob $::env(OPENLANE_ROOT)/designs/$::env(DESIGN_NAME)/src/*.lef]
+`````
+
+In order to integrate the standard cell in the OpenLANE flow, invoke openLANE as usual and carry out following steps:
+``````
+prep -design picorv32a -tag <run_tag> -overwrite
+set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+add_lefs -src $lefs
+run_synthesis
+
+``````
+the new cells have been added in the design:
+![vsdinv_added](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/6e3521d3-cdaf-4932-bdd2-6733e1741cad)
+
+Max timing slack is -24.91ns
+Since the timing of picoRV32a is worse after synthesis, we can aim for a timing driven run.
+
+![max_slac_latest](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/40b160f5-5c02-4b1c-8e85-7c62c8c7d9a4)
+
+Checking for the SYNTH_STRATEGY used by default for the run:
+
+![synth_sizing](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/4ac49de1-16c3-4ac7-be89-a5737222106a)
+
+Setting the SYNTH_STRATEGY to 1 as it will improve the delay and reduce the timing.
+
+Also setting SYNTH_SIZING to 1 as it enables cell sizing.
+````
+set ::env(SYNTH_STRATEGY) "DELAY 1"
+set ::env(SYNTH_SIZING) 1
+````
+
+Run synthesis and see if it has reduced the timing slack. Setup timing (max) reduced to -2.95ns and area increased to 209179.369600
+
+![after_max_slack](https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/f778042f-2ae0-47f6-bb80-92efe98cf1e7)
+
+
+After this run floorplan. In case errors are identified during the run_floorplan phase, proceed by executing the commands sequentially:
+
+1. Initialize the floorplan using "init_floorplan."
+2. Place the input and output elements with "place_io."
+3. Perform global placement using "global_placement_or."
+4. Apply tap cell insertion and decap cell optimization using "tap_decap_or."
+
+After this go ahead with the running placement.
+
+````
+run_placement
+````
+<img width="1118" alt="Screenshot 2023-08-14 at 10 37 15 PM" src="https://github.com/aleenavarghese95/Advanced-Physical-Design-Using-OpenLANE-Sky130/assets/141747430/16542766-f72f-477e-aab6-6a0c70db7ea0">
+
+To run clock tree synthesis (CTS) in OpenLANE use the following command:
+
+````
+run_cts
+````
+
+## **Power Distribution Network**
+
+In contrast to the typical ASIC flow, the generation of the Power Distribution Network (PDN) isn't included in the floorplan process within OpenLANE. PDN generation becomes necessary after Clock Tree Synthesis (CTS) and subsequent Static Timing Analysis (STA) evaluations:
+```
+gen_pdn
+```
+
+- The "gen_pdn" function is utilized for generating the Power Distribution Network (PDN). This network necessitates the utilization of the "design_cts.def" file as its input DEF file. This process establishes both the grid and the straps for both Vdd and ground connections, encircling the standard cells in the layout.
+
+- The standard cell design is carefully crafted to ensure its height aligns with the spacing between the Vdd and ground rails, with a pitch of 2.72. This adherence to specific conditions is crucial for effectively powering the standard cells. Power is introduced into the chip through dedicated power pads, individual ones for Vdd and Gnd. These pads channel power into the rings via vias.
+
+- The rings are interconnected with the straps. Vdd straps link to the Vdd ring, while Gnd straps are connected to the Gnd ring. Both horizontal and vertical straps play a role. The next step involves delivering power from the straps to the standard cells, achieved by attaching the straps to the standard cell rails.
+
+- In cases where macros are present, the straps connect to the macro rings via the macro pads, and the PDN for the macro is pre-established. Specifications for both the straps and rails are defined. In this specific design, straps exist on metal layers 4 and 5, while the standard cell rails are located on metal layer 1. Vias are used to establish connections across these different layers as needed.
+
+## **Routing**
+
+OpenLANE employs TritonRoute as the routing engine to carry out the physical implementation of designs. The routing process encompasses two primary stages:
+
+Global Routing - In this phase, routing guides are generated based on the interconnects outlined in our netlist. These guides specify the layers and chip locations for each net.
+
+Detailed Routing - Here, metal traces are methodically positioned along the routing guides in an iterative manner, enabling the actual physical realization of the routing guides.
+
+Command used in openLANE:
+`````
+run_routing
+`````
+
+In the event that Design Rule Check (DRC) errors persist following the routing process, the user is presented with two choices:
+
+- Re-execute routing using elevated Quality of Results (QoR) settings.
+- Address DRC errors individually by making manual adjustments as indicated in the tritonRoute.drc file.
